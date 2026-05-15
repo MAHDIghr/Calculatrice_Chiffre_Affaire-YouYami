@@ -129,7 +129,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = MEDIA_ROOT = '/home/ghka6062/calculatriceCA.youyami.com/media' #BASE_DIR / 'media' #pour le dev  local
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
