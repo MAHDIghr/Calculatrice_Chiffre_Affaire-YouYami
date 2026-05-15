@@ -1,0 +1,63 @@
+{% extends 'calculator/base.html' %}
+
+{% block title %}Modifier - {{ journee.date|date:'d/m/Y' }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-edit text-warning"></i>
+        Modifier la journée du {{ journee.date|date:'d/m/Y' }}
+    </h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Même structure que nouvelle_journee.html mais avec les valeurs existantes -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> Ventes</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for recette in recettes %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            {{ recette.nom }} ({{ recette.prix_vente_unitaire }} DA)
+                        </label>
+                        <input type="number" 
+                               name="vente_{{ recette.id }}" 
+                               class="form-control" 
+                               min="0"
+                               value="{% for vente in journee.vente_set.all %}{% if vente.recette_gateau_id == recette.id %}{{ vente.quantite_vendue }}{% endif %}{% endfor %}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Frais fixes</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Frais de local (DA)</label>
+                        <input type="number" name="frais_local" class="form-control" 
+                               value="{{ journee.frais_local }}" step="0.01">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Électricité & Impôts (DA)</label>
+                        <input type="number" name="frais_electricite_impots" class="form-control" 
+                               value="{{ journee.frais_electricite_impots }}" step="0.01">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-warning btn-lg w-100">
+            <i class="fas fa-save"></i> Mettre à jour
+        </button>
+    </form>
+</div>
+{% endblock %}

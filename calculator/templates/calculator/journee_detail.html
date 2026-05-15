@@ -1,0 +1,164 @@
+{% extends 'calculator/base.html' %}
+
+{% block title %}Rapport du {{ journee.date|date:'d/m/Y' }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-file-invoice text-primary"></i>
+                Rapport du {{ journee.date|date:'d/m/Y' }}
+            </h2>
+            <div class="float-end">
+                {% if is_today %}
+                <a href="{% url 'modifier_journee' date_str=journee.date|date:'Y-m-d' %}" 
+                   class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <button onclick="supprimerJournee('{{ journee.date|date:'Y-m-d' }}')" 
+                        class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+                {% endif %}
+                <a href="{% url 'export_pdf' date_str=journee.date|date:'Y-m-d' %}" 
+                   class="btn btn-success">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résumé financier -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6>Chiffre d'affaires</h6>
+                <h3 class="text-warning">{{ journee.chiffre_affaire|floatformat:2 }} DA</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6>Total des frais</h6>
+                <h3 class="text-danger">{{ journee.total_frais|floatformat:2 }} DA</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6>Bénéfice net</h6>
+                <h3 class="{% if journee.benefice >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ journee.benefice|floatformat:2 }} DA
+                </h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6>Marge</h6>
+                <h3>
+                    {{ marge|floatformat:1 }}%
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventes détaillées -->
+    <div class="report-section">
+        <h4><i class="fas fa-shopping-basket text-primary"></i> Ventes</h4>
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Gâteau</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Frais ingrédients</th>
+                    <th>Frais emballage</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vente in journee.vente_set.all %}
+                <tr>
+                    <td>{{ vente.recette_gateau.nom }}</td>
+                    <td>{{ vente.quantite_vendue }}</td>
+                    <td>{{ vente.recette_gateau.prix_vente_unitaire|floatformat:2 }} DA</td>
+                    <td>{{ vente.calculer_frais_ingredients|floatformat:2 }} DA</td>
+                    <td>{{ vente.calculer_frais_emballage|floatformat:2 }} DA</td>
+                    <td class="fw-bold">{{ vente.total_vente|floatformat:2 }} DA</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Détail des frais -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="report-section">
+                <h4><i class="fas fa-receipt text-info"></i> Détail des frais</h4>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between">
+                        Frais ingrédients
+                        <span class="badge bg-primary">{{ journee.total_frais_ingredients|floatformat:2 }} DA</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        Frais emballage
+                        <span class="badge bg-info">{{ journee.total_frais_emballage|floatformat:2 }} DA</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        Frais local
+                        <span class="badge bg-secondary">{{ journee.frais_local|floatformat:2 }} DA</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        Électricité & Impôts
+                        <span class="badge bg-secondary">{{ journee.frais_electricite_impots|floatformat:2 }} DA</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        Salaires
+                        <span class="badge bg-secondary">{{ journee.total_salaires|floatformat:2 }} DA</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="report-section">
+                <h4><i class="fas fa-users text-success"></i> Employés</h4>
+                {% if journee.employes.all %}
+                <ul class="list-group">
+                    {% for employe in journee.employes.all %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ employe.nom }}
+                        <span class="text-muted">{{ employe.salaire_journalier|floatformat:2 }} DA</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Aucun employé enregistré</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if is_today %}
+<script>
+function supprimerJournee(date) {
+    if (confirm('Voulez-vous vraiment supprimer cette journée ?')) {
+        fetch(`/journee/${date}/supprimer/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/';
+            }
+        });
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

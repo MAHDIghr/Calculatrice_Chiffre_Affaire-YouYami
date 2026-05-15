@@ -1,0 +1,52 @@
+/* Amélioration de l'interface admin */
+:root {
+    --younyami-primary: #667eea;
+    --younyami-secondary: #764ba2;
+}
+
+.module h2, .module caption {
+    background: linear-gradient(135deg, var(--younyami-primary), var(--younyami-secondary)) !important;
+    color: white !important;
+}
+
+.dashboard #content {
+    width: auto;
+    max-width: 1200px;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input {
+    background: var(--younyami-primary) !important;
+    border: none !important;
+    border-radius: 5px !important;
+    transition: all 0.3s ease !important;
+}
+
+.button:hover, input[type=submit]:hover {
+    background: var(--younyami-secondary) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Style pour les badges */
+.badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+.bg-primary { background: #667eea; color: white; }
+.bg-success { background: #28a745; color: white; }
+.bg-warning { background: #ffc107; color: #000; }
+.bg-info { background: #17a2b8; color: white; }
+.bg-secondary { background: #6c757d; color: white; }
+
+/* Animation des cartes */
+.dashboard-module {
+    transition: transform 0.3s ease;
+}
+
+.dashboard-module:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+

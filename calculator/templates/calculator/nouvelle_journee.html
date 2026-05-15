@@ -1,0 +1,124 @@
+{% extends 'calculator/base.html' %}
+
+{% block title %}Nouvelle Journée{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-calendar-plus text-primary"></i> 
+        Nouvelle Journée - {{ today|date:'d/m/Y' }}
+    </h2>
+
+    <form method="POST" id="journeeForm">
+        {% csrf_token %}
+        
+        <!-- Ventes par recette -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> Ventes du jour</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for recette in recettes %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            {{ recette.nom }} 
+                            <small class="text-muted">({{ recette.prix_vente_unitaire }} DA)</small>
+                        </label>
+                        <input type="number" 
+                               name="vente_{{ recette.id }}" 
+                               class="form-control" 
+                               min="0" 
+                               value="0"
+                               placeholder="Quantité vendue">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Frais fixes -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Frais Fixes</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.frais_local.label_tag }}
+                        {{ form.frais_local }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.frais_electricite_impots.label_tag }}
+                        {{ form.frais_electricite_impots }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employés -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Employés</h5>
+            </div>
+            <div class="card-body">
+                <div id="employes-container">
+                    <div class="employe-row row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" name="employe_nom[]" class="form-control" placeholder="Nom de l'employé">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" name="employe_salaire[]" class="form-control" placeholder="Salaire (DA)" min="0" step="0.01">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger remove-employe">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-success" id="add-employe">
+                    <i class="fas fa-plus"></i> Ajouter un employé
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+            <i class="fas fa-save"></i> Enregistrer la journée
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Ajouter un employé
+    $('#add-employe').click(function() {
+        var newRow = `
+            <div class="employe-row row mb-3">
+                <div class="col-md-6">
+                    <input type="text" name="employe_nom[]" class="form-control" placeholder="Nom de l'employé">
+                </div>
+                <div class="col-md-4">
+                    <input type="number" name="employe_salaire[]" class="form-control" placeholder="Salaire (DA)" min="0" step="0.01">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-employe">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        $('#employes-container').append(newRow);
+    });
+
+    // Supprimer un employé
+    $(document).on('click', '.remove-employe', function() {
+        if ($('.employe-row').length > 1) {
+            $(this).closest('.employe-row').remove();
+        }
+    });
+});
+</script>
+{% endblock %}

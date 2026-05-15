@@ -1,0 +1,169 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block title %}YounYami - Accueil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3">
+                YounYami - calculatrice de Chiffre d'affaire
+            </h1>
+            <p class="lead text-muted">Gestion des ventes quotidiennes</p>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <a href="{% url 'nouvelle_journee' %}" class="text-decoration-none">
+                <div class="stats-card text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h5>Nouvelle Journée</h5>
+                    <p class="mb-0">Créer le rapport du jour</p>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <a href="{% url 'historique' %}" class="text-decoration-none">
+                <div class="stats-card text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5>Historique</h5>
+                    <p class="mb-0">Voir les jours précédents</p>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            {% if journee_today %}
+            <a href="{% url 'journee_detail' date_str=journee_today.date|date:'Y-m-d' %}" class="text-decoration-none">
+                <div class="stats-card text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5>Aujourd'hui</h5>
+                    <p class="mb-0">Voir le rapport du jour</p>
+                </div>
+            </a>
+            {% else %}
+            <div class="stats-card text-center opacity-50">
+                <div class="stats-icon">
+                    <i class="fas fa-calendar-xmark"></i>
+                </div>
+                <h5>Pas de rapport</h5>
+                <p class="mb-0">Créez celui d'aujourd'hui</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Liste des recettes -->
+    <h2 class="mb-4">
+        <i class="fas fa-cookie-bite text-primary"></i> 
+        Nos Recettes Disponibles
+    </h2>
+    
+    <div class="row">
+        {% if recettes %}
+            {% for recette in recettes %}
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="cake-card">
+                    {% if recette.image %}
+                    <img src="{{ recette.image.url }}" class="card-img-top" alt="{{ recette.nom }}">
+                    {% else %}
+                    <div class="bg-light text-center py-5">
+                        <i class="fas fa-cake-candles fa-4x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ recette.nom }}</h5>
+                        <div class="text-center">
+                            <span class="badge bg-success mb-2">
+                                {{ recette.prix_vente_unitaire }} DA/unité
+                            </span>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-box"></i> {{ recette.nombre_unites_resultantes }} unités
+                            </small>
+                        </div>
+                        <hr>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                    data-bs-toggle="modal" data-bs-target="#recetteModal{{ recette.id }}">
+                                <i class="fas fa-info-circle"></i> Détails
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Détails Recette -->
+            <div class="modal fade" id="recetteModal{{ recette.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">{{ recette.nom }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {% if recette.image %}
+                                    <img src="{{ recette.image.url }}" class="img-fluid rounded" alt="{{ recette.nom }}">
+                                    {% endif %}
+                                    <div class="mt-3">
+                                        <h6>Prix de vente : <span class="text-success">{{ recette.prix_vente_unitaire }} DA</span></h6>
+                                        <h6>Unités produites : <span class="badge bg-info">{{ recette.nombre_unites_resultantes }}</span></h6>
+                                        <h6>Frais emballage : <span class="text-warning">{{ recette.frais_emballage_unitaire }} DA/unité</span></h6>
+                                        <h6>Prix de revient : <span class="text-danger">{{ recette.calculer_prix_revient_unitaire|floatformat:2 }} DA/unité</span></h6>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Ingrédients :</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Ingrédient</th>
+                                                <th>Quantité</th>
+                                                <th>Prix</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for ri in recette.recetteingredient_set.all %}
+                                            <tr>
+                                                <td>{{ ri.ingredient.nom }}</td>
+                                                <td>{{ ri.quantite_gramme }}g</td>
+                                                <td>{{ ri.ingredient.prix_kg|floatformat:2 }} DA/kg</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h4>Aucune recette disponible</h4>
+                <p>Ajoutez des recettes depuis l'interface d'administration</p>
+                <a href="{% url 'admin:index' %}" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-cogs"></i> Administration
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
